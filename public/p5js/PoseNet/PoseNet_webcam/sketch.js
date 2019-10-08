@@ -11,37 +11,75 @@ PoseNet example using p5.js
 let video;
 let poseNet;
 let poses = [];
+let nose;
+let isModelReady;
+
+function isMobileDevice() {
+  return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf("IEMobile") !== -1);
+};
 
 function setup() {
   createCanvas(640, 480);
-  video = createCapture(VIDEO);
+  if (isMobileDevice()) {
+    video = createCapture({
+      audio: false,
+      video: {
+        facingMode: {
+          exact: "user"
+        }
+      }
+    });
+  } else {
+    video = createCapture(VIDEO);
+  }
+
   video.size(width, height);
 
   // Create a new poseNet method with a single detection
   poseNet = ml5.poseNet(video, modelReady);
   // This sets up an event that fills the global variable "poses"
   // with an array every time new poses are detected
-  poseNet.on('pose', function(results) {
+  poseNet.on("pose", function(results) {
+    //console.log("on pose");
     poses = results;
+    if (poses.length > 0) {
+      let pose = poses[0].pose;
+      nose = pose.keypoints[0].position;
+    }
   });
+
+  poseNet.on("singlePose", function(pose) {
+    console.log("singlePose");
+  });
+
   // Hide the video element, and just show the canvas
   video.hide();
 }
 
 function modelReady() {
-  select('#status').html('Model Loaded');
+  select("#status").html("Model Loaded");
+  isModelReady = true;
 }
 
 function draw() {
   image(video, 0, 0, width, height);
 
   // We can call both functions to draw all keypoints and the skeletons
-  drawKeypoints();
+  //drawKeypoints();
   drawSkeleton();
+  if (isModelReady) {
+    textSize(64);
+    text(Math.floor(frameRate()), 20, height / 2);
+  }
+  if (nose) {
+    stroke(0, 255, 0);
+    strokeWeight(16);
+    point(nose.x, nose.y);
+  }
 }
 
 // A function to draw ellipses over the detected keypoints
-function drawKeypoints()  {
+function drawKeypoints() {
   // Loop through all the poses detected
   for (let i = 0; i < poses.length; i++) {
     // For each pose detected, loop through all the keypoints
