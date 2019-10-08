@@ -12,6 +12,7 @@ This example uses a callback pattern to create the classifier
 let classifier;
 let video;
 let currentPrediction = "";
+let isModelReady = false;
 
 function isMobileDevice() {
   return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf("IEMobile") !== -1);
@@ -41,7 +42,10 @@ function setup() {
 
 function draw() {
   image(video, 0, 0);
-  text(frameRate(), 10, height / 2);
+  if (isModelReady) {
+    textSize(64);
+    text(Math.floor(frameRate()), 20, height / 2);
+  }
   //background(255,0,0);
 
   if (currentPrediction === "iPod") {
@@ -54,6 +58,7 @@ function draw() {
 function modelReady() {
   // Change the status of the model once its ready
   // Create a client instance
+  isModelReady = true;
   client = new Paho.MQTT.Client("mqtt.cmmc.io", Number(9001), Math.random() + "clientId");
 
 // set callback handlers
