@@ -41,6 +41,7 @@ function setup() {
 
 function draw() {
   image(video, 0, 0);
+  text(frameRate(), 10, height / 2);
   //background(255,0,0);
 
   if (currentPrediction === "iPod") {
