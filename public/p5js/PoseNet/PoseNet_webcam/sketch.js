@@ -13,6 +13,8 @@ let poseNet;
 let poses = [];
 let nose;
 let isModelReady;
+let img1;
+let jokerMode = false;
 
 function isMobileDevice() {
   return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf("IEMobile") !== -1);
@@ -34,6 +36,7 @@ function setup() {
   }
 
   video.size(width, height);
+  img1 = createImg("joker.png");
 
   // Create a new poseNet method with a single detection
   poseNet = ml5.poseNet(video, modelReady);
@@ -62,10 +65,11 @@ function modelReady() {
 }
 
 function draw() {
-  image(video, 0, 0, width, height);
+  //imageMode(CORNERS);
+  image(video, 0, 0, 640, 480);
 
   // We can call both functions to draw all keypoints and the skeletons
-  //drawKeypoints();
+  drawKeypoints();
   drawSkeleton();
   if (isModelReady) {
     textSize(64);
@@ -75,7 +79,17 @@ function draw() {
     stroke(0, 255, 0);
     strokeWeight(16);
     point(nose.x, nose.y);
+    //imageMode(CENTER);
+    if (jokerMode) {
+      img1.position(nose.x - 100, nose.y - 30, 0, 0);
+    } else {
+      img1.position(0, 0, 0, 0);
+    }
   }
+}
+
+function mouseReleased() {
+  jokerMode = !jokerMode;
 }
 
 // A function to draw ellipses over the detected keypoints
