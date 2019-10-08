@@ -13,6 +13,7 @@ let classifier;
 let video;
 let currentPrediction = "";
 let isModelReady = false;
+let client;
 
 function isMobileDevice() {
   return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf("IEMobile") !== -1);
@@ -48,17 +49,14 @@ function draw() {
   }
   //background(255,0,0);
 
-  if (currentPrediction === "iPod") {
-    background(0, 255, 0);
-    textSize(64);
-    text("actually a phone!", 10, height / 2);
-  }
+  //if (currentPrediction === "iPod") {
+  //background(0, 255, 0);
+  textSize(14);
+  text(currentPrediction, 10, height - 100);
+  //}
 }
 
-function modelReady() {
-  // Change the status of the model once its ready
-  // Create a client instance
-  isModelReady = true;
+function initMqtt() {
   client = new Paho.MQTT.Client("mqtt.cmmc.io", Number(9001), Math.random() + "clientId");
 
 // set callback handlers
@@ -90,6 +88,14 @@ function modelReady() {
     console.log("onMessageArrived:" + message.payloadString);
   }
 
+}
+
+function modelReady() {
+  // Change the status of the model once its ready
+  // Create a client instance
+  isModelReady = true;
+  initMqtt();
+
   select("#status").html("Model Loaded");
   // Call the classifyVideo function to start classifying the video
   classifyVideo();
@@ -110,8 +116,13 @@ function gotResult(err, results) {
   //Print out the top three results
   for (let i = 0; i < 3; i++) {
     if (i == 0) console.log("*******");
-    console.log(i + ": " + results[i].label + " " + nf(results[i].confidence, 0, 2));
+    //console.log(i + ": " + results[i].label + " " + nf(results[i].confidence, 0, 2));
+    //let message = new Paho.MQTT.Message("predicted");
+    //message.destinationName = "ml5";
+    //client.send(message);
+    //console.log("sent");
   }
+  //
 
   select("#result").html(currentPrediction);
   select("#probability").html(nf(results[0].confidence, 0, 2));
