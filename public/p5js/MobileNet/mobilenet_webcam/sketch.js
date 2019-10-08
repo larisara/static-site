@@ -13,23 +13,30 @@ let classifier;
 let video;
 let currentPrediction = "";
 
+function isMobileDevice() {
+  return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf("IEMobile") !== -1);
+};
+
 function setup() {
   createCanvas(640, 480);
   // Create a video element
-  video = createCapture(VIDEO);
-  // // video =  createCapture({
-  // //   audio: false,
-  // //   video: {
-  // //     facingMode: {
-  // //       exact: "environment"
-  // //     }
-  // //   }
-  // // });
-  
+  if (isMobileDevice()) {
+    video = createCapture({
+      audio: false,
+      video: {
+        facingMode: {
+          exact: "environment"
+        }
+      }
+    });
+  } else {
+    video = createCapture(VIDEO);
+  }
+
   video.size(640, 480);
   video.hide();
   // Initialize the Image Classifier method with MobileNet and the video as the second argument
-  classifier = ml5.imageClassifier('MobileNet', video, modelReady);
+  classifier = ml5.imageClassifier("MobileNet", video, modelReady);
 }
 
 function draw() {
@@ -45,7 +52,7 @@ function draw() {
 
 function modelReady() {
   // Change the status of the model once its ready
-  select('#status').html('Model Loaded');
+  select("#status").html("Model Loaded");
   // Call the classifyVideo function to start classifying the video
   classifyVideo();
 }
@@ -60,16 +67,16 @@ function gotResult(err, results) {
 
   // The results are in an array ordered by probability.
   currentPrediction = results[0].label;
-  //currentPrediction = currentPrediction.split(',')[0]; //Optionally only use the first part of the prediction, before any commas  
-  
+  //currentPrediction = currentPrediction.split(',')[0]; //Optionally only use the first part of the prediction, before any commas
+
   //Print out the top three results
-  for (let i = 0; i<3; i++) {
+  for (let i = 0; i < 3; i++) {
     if (i == 0) console.log("*******");
-   console.log(i + ": " + results[i].label + " " + nf(results[i].confidence, 0, 2));
+    console.log(i + ": " + results[i].label + " " + nf(results[i].confidence, 0, 2));
   }
-  
-  select('#result').html(currentPrediction);
-  select('#probability').html(nf(results[0].confidence, 0, 2));    
-  
+
+  select("#result").html(currentPrediction);
+  select("#probability").html(nf(results[0].confidence, 0, 2));
+
   classifyVideo();
 }
