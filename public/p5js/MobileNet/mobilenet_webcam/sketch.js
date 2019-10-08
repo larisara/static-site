@@ -97,11 +97,44 @@ function initMqtt() {
 
 }
 
+let microgear;
+
+function initNetpie() {
+  microgear = Microgear.create({
+    key: "hAiK0uvpdcJuFG5",
+    secret: "owLrbZfyNoLttNPXPF0Van9rD"
+  });
+
+  microgear.on("message", function(topic, msg) {
+    console.log(topic, msg);
+  });
+
+  microgear.on("connected", function() {
+    isMqttConnected = true;
+    //microgear.setAlias("htmlgear");    /* alias can be renamed anytime with this function */
+    setInterval(function() {
+      microgear.chat("hello", currentPrediction);
+      console.log("x");
+    }, 1000);
+  });
+
+  microgear.on("present", function(event) {
+    console.log(event);
+  });
+
+  microgear.on("absent", function(event) {
+    console.log(event);
+  });
+
+  microgear.connect("natmqtt");
+
+}
+
 function modelReady() {
   // Change the status of the model once its ready
   // Create a client instance
   isModelReady = true;
-  initMqtt();
+  initNetpie();
 
   select("#status").html("Model Loaded");
   // Call the classifyVideo function to start classifying the video
@@ -118,15 +151,11 @@ function gotResult(err, results) {
 
   // The results are in an array ordered by probability.
   currentPrediction = results[0].label;
-  //currentPrediction = currentPrediction.split(',')[0]; //Optionally only use the first part of the prediction, before any commas
+  console.log("currentPrediction", currentPrediction);
 
-  if (isMqttConnected) {
-    message = new Paho.MQTT.Message(currentPrediction);
-    message.destinationName = "ml5/predict";
-    client.send(message);
-  }
+//currentPrediction = currentPrediction.split(',')[0]; //Optionally only use the first part of the prediction, before any commas
 
-  //Print out the top three results
+//Print out the top three results
   for (let i = 0; i < 3; i++) {
     if (i == 0) console.log("*******");
     //console.log(i + ": " + results[i].label + " " + nf(results[i].confidence, 0, 2));
@@ -135,10 +164,11 @@ function gotResult(err, results) {
     //client.send(message);
     //console.log("sent");
   }
-  //
+//
 
   select("#result").html(currentPrediction);
   select("#probability").html(nf(results[0].confidence, 0, 2));
 
   classifyVideo();
 }
+
