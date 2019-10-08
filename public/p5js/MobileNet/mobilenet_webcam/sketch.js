@@ -13,6 +13,7 @@ let classifier;
 let video;
 let currentPrediction = "";
 let isModelReady = false;
+let isMqttConnected = false;
 let client;
 
 function isMobileDevice() {
@@ -69,10 +70,16 @@ function initMqtt() {
 // called when the client connects
   function onConnect() {
     // Once a connection has been made, make a subscription and send a message.
+    isMqttConnected = true;
     console.log("onConnect");
-    client.subscribe("World");
-    message = new Paho.MQTT.Message("Hello");
-    message.destinationName = "World";
+    //client.subscribe("ml5/predict");
+
+    //let message = new Paho.MQTT.Message("Hello");
+    //message.destinationName = "World";
+    //client.send(message);
+
+    message = new Paho.MQTT.Message("predicted");
+    message.destinationName = "ml5/predict";
     client.send(message);
   }
 
@@ -112,6 +119,12 @@ function gotResult(err, results) {
   // The results are in an array ordered by probability.
   currentPrediction = results[0].label;
   //currentPrediction = currentPrediction.split(',')[0]; //Optionally only use the first part of the prediction, before any commas
+
+  if (isMqttConnected) {
+    message = new Paho.MQTT.Message(currentPrediction);
+    message.destinationName = "ml5/predict";
+    client.send(message);
+  }
 
   //Print out the top three results
   for (let i = 0; i < 3; i++) {
